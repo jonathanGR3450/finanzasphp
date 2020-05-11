@@ -1,5 +1,11 @@
 $(document).ready(function () {
-
+    var timeout=null;
+    $("#buscar").on('input', function () {
+        clearTimeout(timeout);
+        timeout=setTimeout(()=>{
+                listaSolicitud($(this).val(), 1, 1, 20);
+        }, 500);
+    });
 });
 
 function listaSolicitud(busqueda, pagina, min=1, max=20) {
@@ -20,7 +26,8 @@ function listaSolicitud(busqueda, pagina, min=1, max=20) {
             var x=Object.values(datos[i]);
             tabla+=`<tr>`;
             for (var j=0;j<x.length;j++){
-                j==3 ? x[j]=justificarVigencias(x[j]) : '' ;
+                j==3 ? x[j]=justificar(x[j], 3) : '' ;
+                j==2 ? x[j]=justificar(x[j], 1) : '';
                 tabla+=`<td>${x[j]}</td>`
             }
             tabla+=`</tr>`;
@@ -35,6 +42,11 @@ function listaSolicitud(busqueda, pagina, min=1, max=20) {
         if(numeropages<20){
             min=1;
             max=datos.length;
+        }
+        //valida las ultimas paginas para que no ponga paginas que no existan
+        if (max>=info.last_page){
+            min=min;
+            max=info.last_page;
         }
         //para el extremo izquierdo
         paginacion+=`<li class="page-item">
@@ -71,16 +83,10 @@ function listaSolicitud(busqueda, pagina, min=1, max=20) {
         //para validar si va a las ultimas paginas
         var ultimo=Math.ceil(info.last_page/20);
         ultimo=ultimo*20-info.last_page;
-        //max>=info.last_page ? console.log(info.last_page) : console.log("no se pasa");
         //para el extremo derecho
         if (min+20<=info.last_page){
-            if (max>=info.last_page){
-                auxmin1=min+20;
-                auxmax1=info.last_page;
-            }else {
-                auxmin1=min+20;
-                auxmax1=max+20;
-            }
+            auxmin1=min+20;
+            auxmax1=max+20;
             paginacion+=`<li class="page-item">
             <a class="page-link" href="javascript:void(0)" onclick="listaSolicitud('${buscar}', '${auxmin1}', ${auxmin1}, ${auxmax1})" aria-label="Next">
             <span aria-hidden="true">&raquo;</span>
@@ -98,38 +104,14 @@ function listaSolicitud(busqueda, pagina, min=1, max=20) {
             </li>`;
         $("#paginacion").html(paginacion);
 
-    /*<li class="page-item">
-            <a class="page-link" href="#" aria-label="Previous">
-            <span aria-hidden="true">&laquo;Inicio</span>
-        </a>
-        </li>
-        <li class="page-item">
-            <a class="page-link" href="#" aria-label="Previous">
-            <span aria-hidden="true">&laquo;</span>
-        </a>
-        </li>
-        <li class="page-item"><a class="page-link" href="#">1</a></li>
-        <li class="page-item"><a class="page-link" href="#">2</a></li>
-        <li class="page-item"><a class="page-link" href="#">3</a></li>
-        <li class="page-item">
-            <a class="page-link" href="#" aria-label="Next">
-            <span aria-hidden="true">&raquo;</span>
-        </a>
-        </li>
-        <li class="page-item">
-            <a class="page-link" href="#" aria-label="Next">
-            <span aria-hidden="true">fin&raquo;</span>
-        </a>
-        </li>*/
-
     });
 
-    function justificarVigencias(vigencias) {
+    function justificar(vigencias , aux=3) {
         var vig=vigencias.split(',');
         var str="";
         for (i=1;i<=vig.length;i++){
             str+=vig[i-1]+", ";
-            i%3==0 ? str+="<br>" : '';
+            i%aux==0 ? str+="<br>" : '';
         }
         return str;
     }

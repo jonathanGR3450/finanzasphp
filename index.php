@@ -34,6 +34,10 @@
             <tbody id="listasolicitud"></tbody>
         </table>
     </div>
+    <a href="solicitud.php">
+        <button class="btn btn-primary mb-3">Solicitar</button>
+    </a>
+
     <div class="justify-content-center">
         <nav aria-label="Page navigation">
             <ul class="pagination justify-content-center" id="paginacion">

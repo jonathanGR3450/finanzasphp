@@ -184,7 +184,33 @@ $(document).ready(function(){
         $("#numerocuotas").val()>0 ? cuotas() : alert("el numero de cuotas debe ser mayor a cero");
 
     });
-    $("#municipio").select2();
+    $("#municipio").select2({
+        placeholder: 'Seleccione un municipio',
+        allowClear: true,
+        maximumSelectionLength: 1,
+        ajax: {
+            url: "controller/getMunicipio.php",
+            type: 'GET',
+            dataType: 'json',
+            data: function (params) {
+                var query = {
+                    'q':params.term,
+                    'page': params.page || 1
+                };
+                return query;
+            },
+            processResults: function (data, params) {
+                params.page = params.page || 1;
+                return {
+                    results: data.data,
+                    pagination: {
+                        more: (params.page * data.per_page) < data.total
+                    }
+                };
+            },
+            cache:true
+        }
+    });
 });
 function clearTablas() {
     var tablaVigencias=`<tr style="background-color: #aec6ff">
