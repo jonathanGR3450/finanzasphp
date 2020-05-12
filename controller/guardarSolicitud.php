@@ -1,7 +1,7 @@
 <?php
     if ($_POST['predios']){
         $fecha = date('Y-m-d H:i:s');
-        $acuerdopago=20000+rand(0, 99);
+        $acuerdopago=500000+rand(0, 99);
         $pago = [
             ['predial_acuerdo_pago'=>$acuerdopago,
             'empresa'=> 3,
@@ -19,21 +19,22 @@
         //dejar pendiente para crear esa tabla //para poseedor crear nuevo campo 5000
         isset($_POST['contribuyente']) ? $contribuyente=$_POST['contribuyente'] : $contribuyente="";
         isset($_POST['poseedor']) ? $poseedor=$_POST['poseedor'] : $poseedor="";
+        $municipio=$_POST['municipio'];
         $datoscampos=[
             '9131'=>$_POST['predios'], //pk predios
             '9111'=>$contribuyente, //array de contribuyente o tercero
             '11004'=>$poseedor, //array de poseedor
-            '11005'=>'falta implementar', //municipio
+            '11005'=>$municipio, //municipio
             '11006'=>$_POST['direccion'], //direccion de notificacion
             '11007'=>$_POST['matricula'], //matricula del predio
             '9112'=>getvigencia($_POST['vigencia']), //array de vigencias
             '9114'=>$_POST['numerocuotas'], //numero de cuotas
             '9115'=>"", //fecha de resolucion
             '9116'=>'', //numero de resolucion
-            '9129'=>'f', //estado acuerdo pagado (ellos lo tienen con f)
+            '9129'=>'i', //estado acuerdo pagado (ellos lo tienen con f)
         ];
         $pagocampos=[];
-        $pkpagocampos=$acuerdopago+10000;
+        $pkpagocampos=$acuerdopago+50000;
         $count=0;
         foreach ($datoscampos as $datos=>$x){
             if (is_array($x)){
@@ -82,7 +83,7 @@
         }
 
         //guardar las cuotas discriminadas
-        $pkacuerdocuotas=$acuerdopago+111000;
+        $pkacuerdocuotas=$acuerdopago+100000;
         $pagocuota=[];
         $count=0;
         foreach ($_POST['cuotas'] as $item) {
@@ -126,10 +127,9 @@
         $result=curl_exec($curl);
         curl_close($curl);
 
-        echo "<pre>";
-        print_r($result);
-        echo "</pre>";
     }
+    header("LOCATION:http://localhost:8080/finanzasphp/");
+    exit();
 
     function getvigencia($data){
         $result=[];

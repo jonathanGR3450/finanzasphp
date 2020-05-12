@@ -7,10 +7,7 @@
         $totalVigencias=$datos['data'][2]['totales'];
         $sum=0;
         $totalCuotas=[];
-
         $cuota="";
-        $numero="";
-        $html="";
         for ($i=0;$i<$numeroCuotas;$i++){
             $i==0 ? $cuota=$cuotaInicial : $cuota=(100-$cuotaInicial)/$numeroCuotas;
             $res=total($totalVigencias, $cuota);
@@ -25,7 +22,9 @@
         $totalCuotas[]=ultimaCuota($totalCuotas, $totalVigencias, 500);
         //suma el total
         $totalCuotas[]=totalCuotas($totalCuotas);
-        echo imprimir($totalCuotas, $cuotaInicial, $numeroCuotas);
+        //echo imprimir($totalCuotas, $cuotaInicial, $numeroCuotas);
+        $lol=['total'=>$totalCuotas];
+        echo json_encode($lol);
     }
     function imprimir($totalCuotas, $porcentaje, $numeroCuotas){
         $html="";

@@ -13,12 +13,10 @@ $(document).ready(function(){
             dataType: "json",
             type: "GET",
             data: function (params) {
-                var query = {
+                return {
                     q: params.term,
                     page: params.page || 1
-                }
-                // Query parameters will be ?search=[term]&page=[page]
-                return query;
+                };
             },
             processResults: function (data, params) {
                 params.page = params.page || 1;
@@ -40,12 +38,12 @@ $(document).ready(function(){
             getMatricula(selected[0]['id']);
             getTerceroPredio(selected[0]['id']);
             var selfactura=$("input[name=selectfactura]:checked").val();
-            if (selfactura=='factura'){
+            if (selfactura==='factura'){
                 s2factura(selected[0]['id'], 'Seleccione el numero de factura');
-            }else if (selfactura=='vigencia'){
+            }else if (selfactura==='vigencia'){
                 s2vigencias(selected[0]['id'], "Seleccione el numero de vigencia");
             }
-        }else if (selected.length==0){
+        }else if (selected.length===0){
             $("#matricula").val(null);
             $("#direccion").val(null);
             $("#contribuyente").val(null).trigger("change");
@@ -65,12 +63,10 @@ $(document).ready(function(){
             dataType: 'json',
             type: 'GET',
             data: function (params) {
-                var query = {
+                return {
                     q: params.term,
                     page: params.page || 1
                 };
-                // Query parameters will be ?search=[term]&page=[page]
-                return query;
             },
             processResults: function (data, params) {
                 params.page = params.page || 1;
@@ -94,12 +90,10 @@ $(document).ready(function(){
             dataType: "json",
             type: "GET",
             data: function (params) {
-                var query = {
+                return {
                     q: params.term,
                     page: params.page || 1
                 };
-                // Query parameters will be ?search=[term]&page=[page]
-                return query;
             },
             processResults: function (data, params) {
                 params.page = params.page || 1;
@@ -117,7 +111,7 @@ $(document).ready(function(){
     $("input[name=selectfactura]").change(function () {
         var data=$("#predios").select2('data');
         var selected=Object.values(data);
-            if ($(this).val()=='factura'){
+            if ($(this).val()==='factura'){
                 $("#factura").val(null).empty().trigger("change");
                 $("#vigencias").val(null).empty().trigger("change");
                 s2vigencias(0, '');
@@ -127,7 +121,7 @@ $(document).ready(function(){
                     console.log("hay pedio seleciono factura")
                     s2factura(selected[0]['id'], 'Seleccione el numero de factura');
                 }
-            }else if ($(this).val()=='vigencia'){
+            }else if ($(this).val()==='vigencia'){
                 s2factura(0, '');
                 $("#factura").val(null).empty().trigger("change");
                 $("#factura").select2({ data: null }).prop("disabled", true).trigger("change");
@@ -193,11 +187,10 @@ $(document).ready(function(){
             type: 'GET',
             dataType: 'json',
             data: function (params) {
-                var query = {
+                return {
                     'q':params.term,
                     'page': params.page || 1
                 };
-                return query;
             },
             processResults: function (data, params) {
                 params.page = params.page || 1;
@@ -234,36 +227,79 @@ function cuotas() {
         });
         totales.push({"totales":aux});
         var json=JSON.stringify({"data":totales});
-        __ajaxText("controller/printCuotas.php",{"json":json})
+        __ajax("controller/printCuotas.php",{"json":json})
             .done(function (info) {
-                $("#datoscuotas").html(info);
+                var html=tablaCuotas(info['total'], $("#primeracuota").val(), $("#numerocuotas").val());
+                $("#datoscuotas").html(html);
             });
     }
 }
+
+function tablaCuotas(totalCuotas, porcentaje, numeroCuotas){
+    html="";
+    count=0;
+    for (i=0;i<totalCuotas.length;i++){
+        st="";
+        if (count===0){
+            cuota="Inicial";
+            porcentajeCuota=porcentaje;
+        }else if (count===totalCuotas.length-1){
+            st="style='background-color: #aec6ff'";
+            cuota="Total";
+            porcentajeCuota="100";
+        }else{
+            cuota=count;
+            porcentajeCuota=Number((100-porcentaje)/numeroCuotas).toFixed(2);
+        }
+        html+=`<tr ${st}>
+            <th scope='row'>${cuota}</th>
+            <td><input type='text' value='${porcentajeCuota}' name='cuotas[${count}][]' hidden>${porcentajeCuota}</td>`;
+        for(var j=0; j<totalCuotas[i].length;j++){
+            html+=`<td><input type='text' value='${totalCuotas[i][j]}' name='cuotas[${count}][]' hidden>${totalCuotas[i][j]}</td>`;
+        }
+        html+=`<td><input type='date' name='cuotas[${count}][]'  value=''></td></tr>`;
+        count++;
+    }
+    return html;
+}
+
 function facturaPrint(id) {
     var data=[];
     data.push({"id": id});
     json=JSON.stringify(data);
-    __ajaxText("controller/printVigenciasFactura.php", {"json":json})
+    __ajax("controller/printVigenciasFactura.php", {"json":json})
         .done(function (info) {
-            $("#datosvigencias").html(info);
-
+            tabla=imprimirTablaVigencias(info['tabla']);
+            $("#datosvigencias").html(tabla);
     });
+}
+function imprimirTablaVigencias(datos) {
+    html="";
+    for (i=0;i<datos.length;i++){
+        i===datos.length-1 ? total=`id='totales' style='background-color: #aec6ff'` : total="";
+        html+=`<tr ${total}>`;
+        for (j=0;j<datos[i].length;j++){
+            j===0 ? t="th" : t="td";
+            html+=`<${t}><input type='text' value='${datos[i][j]}' name='vigencia[${i}][]' hidden>${datos[i][j]}</${t}>`;
+        }
+        html+=`</tr>`;
+    }
+    return html;
 }
 function vigenciaPrint(data) {
     if (data.length>0){
-        var ids=[];
         var radioselected=$("input[name=selectfactura]:checked").val();
-        if (radioselected=="vigencia"){
+        if (radioselected==="vigencia"){
             var ids=$("#vigencias").val();
             var predios=Object.values($("#predios").val());
             data=[];
             data.push({"vigencias":ids});
             data.push({"predio":predios[0]})
             json=JSON.stringify(data);
-            __ajaxText("controller/printVigencias.php", {"json":json})
+            __ajax("controller/printVigencias.php", {"json":json})
                 .done(function (info) {
-                    $("#datosvigencias").html(info);
+                    res=imprimirTablaVigencias(info['tabla']);
+                    $("#datosvigencias").html(res);
                 });
         }
     }
@@ -280,13 +316,11 @@ function s2factura(id, placeholderText) {
             dataType: "json",
             type: "GET",
             data: function (params) {
-                var query = {
+                return {
                     q: params.term,
                     id: id,
                     page: params.page || 1
                 }
-                // Query parameters will be ?search=[term]&page=[page]
-                return query;
             },
             processResults: function (data, params) {
                 params.page = params.page || 1;
@@ -341,39 +375,11 @@ function getMatricula(id) {
             $("#direccion").val(res[1][0].direccion);
     });
 }
-/*function predialLike(ref) {
-    var data = [];
-    data.push({"ref": ref});
-    var json = JSON.stringify({"data":data});
-    //console.log(json);
-    __ajax("controller/listPredialLike.php", {"json":json}).
-    done(function (info) {
-        console.log(info);
-        //var res=JSON.parse(info);
-        var html = "";
-        for (var i in info.results){
-            html+=`<option  id="${info.results[i]['predial_predio']}">${info.results[i]['referencia_catastral']}</option>`;
-        }
-        $("#listpredios").html(html);
-
-    });
-}*/
 function __ajax(url, data) {
-    var ajax = $.ajax({
+    return $.ajax({
         data:data,
         type:"GET",
         dataType:"json",
         url:url
     })
-    return ajax;
 }
-function __ajaxText(url, data) {
-    var ajax = $.ajax({
-        data:data,
-        type:"GET",
-        //dataType:"text",
-        url:url
-    })
-    return ajax;
-}
-

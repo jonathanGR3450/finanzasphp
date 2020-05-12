@@ -13,28 +13,20 @@
     curl_close($curl);
     $res=json_decode($results, true);
     $data=$res['results'];
-    $html="";
-    $cout=0;
+
+    $datosVigencia=[];
     foreach ($data AS $x){
         $x===reset($data) ? $x['otros']=2100 : $x['otros']=0;
         $x['suma']=suma($x);
-        //modificar la consulta para traer el id de cada vigencia para el guardar
-        $html.="<tr>";
+        $aux=[];
         foreach ($x as $value){
-            $html.="<td><input type='text' value='{$value}' name='vigencia[{$cout}][]' hidden>{$value}</td>";
+            $aux[]=$value;
         }
-        $html.="</tr>";
-        $cout++;
+        $datosVigencia[]=$aux;
     }
-    $totalizado=totales($data);
-    $cout+=1;
-    $html.="<tr id='totales' style='background-color: #aec6ff'>
-                        <th>Totalizado de Vigencias</th>";
-    foreach ($totalizado as $total){
-        $html.="<td><input type='text' value='{$total}' name='vigencia[{$cout}][]' hidden>{$total}</td>";
-    }
-    $html.="</tr>";
-    echo $html;
+    $datosVigencia[]=totales($data);
+    $total=array('tabla'=>$datosVigencia);
+    echo json_encode($total);
 
     function suma($data){
         unset($data['descripcion']);
@@ -44,9 +36,10 @@
     }
     function totales($data){
         $result=[];
+        $result[]="Totalizado de Vigencias";
         foreach ($data as $datum) {
             unset($datum['descripcion']);
-            $i=0;
+            $i=1;
             foreach ($datum as $x){
                 $result[$i]+=$x;
                 $i++;
