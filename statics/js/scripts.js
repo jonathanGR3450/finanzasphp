@@ -32,12 +32,12 @@ $(document).ready(function(){
     });
     //cuando hay cambios en la lista de predios se asigna informacion por defecto
     $("#predios").change(function () {
-        var data=$("#predios").select2('data');
-        var selected=Object.values(data);
+        let data=$("#predios").select2('data');
+        let selected=Object.values(data);
         if (selected.length>0){
             getMatricula(selected[0]['id']);
             getTerceroPredio(selected[0]['id']);
-            var selfactura=$("input[name=selectfactura]:checked").val();
+            let selfactura=$("input[name=selectfactura]:checked").val();
             if (selfactura==='factura'){
                 s2factura(selected[0]['id'], 'Seleccione el numero de factura');
             }else if (selfactura==='vigencia'){
@@ -109,22 +109,18 @@ $(document).ready(function(){
     });
     //para cuando cambia de facturas a vigencias
     $("input[name=selectfactura]").change(function () {
-        var data=$("#predios").select2('data');
-        var selected=Object.values(data);
+        let data=$("#predios").select2('data');
+        let selected=Object.values(data);
             if ($(this).val()==='factura'){
-                $("#factura").val(null).empty().trigger("change");
-                $("#vigencias").val(null).empty().trigger("change");
+                $("#factura").val(null).prop("disabled", false).empty().trigger("change");
+                $("#vigencias").val(null).prop("disabled", true).empty().trigger("change");
                 s2vigencias(0, '');
-                $("#vigencias").prop("disabled", true).trigger("change");
-                $("#factura").prop("disabled", false).trigger("change");
                 if (selected.length>0){
-                    console.log("hay pedio seleciono factura")
                     s2factura(selected[0]['id'], 'Seleccione el numero de factura');
                 }
             }else if ($(this).val()==='vigencia'){
                 s2factura(0, '');
-                $("#factura").val(null).empty().trigger("change");
-                $("#factura").select2({ data: null }).prop("disabled", true).trigger("change");
+                $("#factura").select2({ data: null }).prop("disabled", true).empty().trigger("change");
                 $("#vigencias").select2({ data: null }).prop("disabled", false).trigger("change");
                 console.log("elimina vigencias?")
                 if (selected.length>0){
@@ -133,17 +129,17 @@ $(document).ready(function(){
                 }
             }
     });
-    $("#factura").change(function () {
+    $("#factura").select2().change(function () {
         $("#vigencias").val(null).empty().trigger("change");
-        var selectfactura=Object.values($(this).select2('data'));
+        let selectfactura=Object.values($(this).select2('data'));
         if (selectfactura.length>0){
-            var data=[];
+            let data=[];
             data.push({"id":selectfactura[0]['id']})
-            var json=JSON.stringify(data);
+            let json=JSON.stringify(data);
             __ajax("controller/vigenciaFactura.php", {"json":json})
                 .done(function (info) {
-                    for (var i=0; i<info.length; i++){
-                        var newOption=new Option(info[i]['text'], info[i]['id'], true, true);
+                    for (let i=0; i<info.length; i++){
+                        let newOption=new Option(info[i]['text'], info[i]['id'], true, true);
                         $("#vigencias").append(newOption).trigger("change");
                     }
                     if ($("#vigencias").val().length>0){
@@ -155,9 +151,7 @@ $(document).ready(function(){
         }
 
     });
-    $("#factura").select2();
-    $("#vigencias").select2();
-    $("#vigencias").change(function () {
+    $("#vigencias").select2().change(function () {
         if ($(this).val().length>0){
             vigenciaPrint(this)
         }else {
@@ -165,7 +159,7 @@ $(document).ready(function(){
         }
 
     });
-    var timeout = null;
+    let timeout = null;
     $("#numerocuotas").on("input", function () {
         clearTimeout(timeout);
         timeout=setTimeout(()=>{
@@ -176,7 +170,6 @@ $(document).ready(function(){
     });
     $("#calcular").click(function () {
         $("#numerocuotas").val()>0 ? cuotas() : alert("el numero de cuotas debe ser mayor a cero");
-
     });
     $("#municipio").select2({
         placeholder: 'Seleccione un municipio',
@@ -204,13 +197,127 @@ $(document).ready(function(){
             cache:true
         }
     });
+
+    //para facturacion
+    $("#acuerdopago").select2({
+        placeholder: 'Seleccione el numero de acuerdo de pago',
+        allowClear: true,
+        maximumSelectionLength: 1,
+        cache: true,
+        ajax: {
+            url: 'controller/getAcuerdoPagos.php',
+            type: 'GET',
+            dataType: 'json',
+            data: function (params) {
+                return {
+                    'q': params.term,
+                    'page': params.page || 1
+                };
+            },
+            processResults: function (data, params) {
+                params.page = params.page || 1;
+                return {
+                    results: data.data,
+                    pagination: {
+                        more: (params.page * data.per_page) < data.total
+                    }
+                };
+            }
+        },
+    }).change(function () {
+        if ($(this).val().length>0){
+            id=$(this).val();
+            facturacion(id[0]);
+        }else {
+            $('#cuotas').empty().trigger('change');
+        }
+    });
+    $("#cuotas").change(function () {
+        if ($(this).val().length>0){
+            let cuota = $(this).select2('data');
+            if (cuota[0]['text']==="inicial"){
+                let id=[{'id':cuota[0]['id']}];
+                let json=JSON.stringify(id);
+                __ajax('controller/getDebeCuota.php', {'json':json})
+                    .done(function (info) {
+                        debe=info[0]['debecuota'];
+                        $("#monto").prop({ "placeholder":debe, "max":debe});
+                    });
+            }else{
+                let acuerdo=$("#acuerdopago").val();
+                let id=[{'id':acuerdo[0]}];
+                let json=JSON.stringify(id);
+                __ajax('controller/getDebeTotal.php', {'json':json})
+                    .done(function (info) {
+                        console.log(info)
+                        debe=info[0]['debetotal'];
+                        $("#monto").prop({ "placeholder":debe, "max":debe});
+                    });
+            }
+        }else {
+            $("#monto").prop({ "placeholder":'0', "max":'', 'value':''});
+        }
+    }).select2({
+        placeholder: 'Seleccione la cuota que desea abonar',
+        allowClear: true,
+        maximumSelectionLength: 1,
+        cache: true,
+    });
+    $("#facturacion").click(function () {
+        let montovalor=$("#monto");
+        let cuotas=$("#cuotas");
+        let fechapago=$("#fechapago");
+        if (cuotas.val().length>0 && montovalor.val().length>0 && fechapago.val().length>0){
+            let max = montovalor.attr('max');
+            let monto=montovalor.val();
+            if (monto<=max){
+                datos=[];
+                datos.push({'cuotas':cuotas.val(), 'monto':montovalor.val(), 'fechapago':fechapago.val()});
+                json=JSON.stringify(datos);
+                $.ajax({
+                    data: {'json':json},
+                    type: 'GET',
+                    dataType: 'json',
+                    url:'controller/setLiquidacion.php',
+                }).done(function (info) {
+                    cuotas.empty().trigger('change')
+                    $("#acuerdopago").empty().trigger('change')
+                    montovalor.val('');
+                    fechapago.val("");
+                });
+            }
+            else {
+                alert('el monto sobre pasa el valor que debe');
+                montovalor.val('');
+            }
+
+        }else alert('los campos no deben estar vacios')
+    });
+
 });
+//para facturacion
+function facturacion(id) {
+    data=[];
+    data.push({'id':id});
+    json=JSON.stringify(data);
+    __ajax('controller/getCuotasAcuerdo.php', {'json':json})
+    .done(function (info) {
+        info.data[0]['text']="inicial";
+        $("#cuotas").select2({
+            placeholder: 'Seleccione la cuota que desea abonar',
+            allowClear: true,
+            maximumSelectionLength: 1,
+            data: info.data,
+            cache: true,
+        });
+    });
+}
 function clearTablas() {
-    var tablaVigencias=`<tr style="background-color: #aec6ff">
+    let tablaVigencias=`<tr style="background-color: #aec6ff">
                         <th scope="row">Totalizado de Vigencias</th>
                         <td>0</td> <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>`;
     $("#datosvigencias").html(tablaVigencias);
-    var tablaCuotas=`<tr style="background-color: #aec6ff">
+    let tablaCuotas=`<tr style="background-color: #aec6ff">
                         <th scope="row">Total</th><td>0</td>
                         <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
                         <td>0</td><td>0</td></tr>`;
@@ -218,18 +325,18 @@ function clearTablas() {
 }
 function cuotas() {
     if ($("#vigencias").val().length>0){
-        var totales=[];
-        var aux=[];
+        let totales=[];
+        let aux=[];
         totales.push({"primeracuota":$("#primeracuota").val()})
         totales.push({"cuotas":$("#numerocuotas").val()});
         $("#totales").find("td").find("input").each(function () {
             aux.push($(this).val());
         });
         totales.push({"totales":aux});
-        var json=JSON.stringify({"data":totales});
+        let json=JSON.stringify({"data":totales});
         __ajax("controller/printCuotas.php",{"json":json})
             .done(function (info) {
-                var html=tablaCuotas(info['total'], $("#primeracuota").val(), $("#numerocuotas").val());
+                let html=tablaCuotas(info['total'], $("#primeracuota").val(), $("#numerocuotas").val());
                 $("#datoscuotas").html(html);
             });
     }
@@ -254,17 +361,17 @@ function tablaCuotas(totalCuotas, porcentaje, numeroCuotas){
         html+=`<tr ${st}>
             <th scope='row'>${cuota}</th>
             <td><input type='text' value='${porcentajeCuota}' name='cuotas[${count}][]' hidden>${porcentajeCuota}</td>`;
-        for(var j=0; j<totalCuotas[i].length;j++){
+        for(let j=0; j<totalCuotas[i].length;j++){
             html+=`<td><input type='text' value='${totalCuotas[i][j]}' name='cuotas[${count}][]' hidden>${totalCuotas[i][j]}</td>`;
         }
-        html+=`<td><input type='date' name='cuotas[${count}][]'  value=''></td></tr>`;
+        i<totalCuotas.length-1 ? html+=`<td><input type='date' name='cuotas[${count}][]'  value=''></td></tr>` : null;
         count++;
     }
     return html;
 }
 
 function facturaPrint(id) {
-    var data=[];
+    let data=[];
     data.push({"id": id});
     json=JSON.stringify(data);
     __ajax("controller/printVigenciasFactura.php", {"json":json})
@@ -288,10 +395,10 @@ function imprimirTablaVigencias(datos) {
 }
 function vigenciaPrint(data) {
     if (data.length>0){
-        var radioselected=$("input[name=selectfactura]:checked").val();
+        let radioselected=$("input[name=selectfactura]:checked").val();
         if (radioselected==="vigencia"){
-            var ids=$("#vigencias").val();
-            var predios=Object.values($("#predios").val());
+            let ids=$("#vigencias").val();
+            let predios=Object.values($("#predios").val());
             data=[];
             data.push({"vigencias":ids});
             data.push({"predio":predios[0]})
@@ -306,8 +413,8 @@ function vigenciaPrint(data) {
 
 }
 function s2factura(id, placeholderText) {
-    $("#factura").data('placeholder', placeholderText);
-    $("#factura").select2({
+    //$("#factura").data('placeholder', placeholderText);
+    $("#factura").data('placeholder', placeholderText).select2({
         maximumSelectionLength: 1,
         allowClear: true,
         ajax: {
@@ -337,9 +444,9 @@ function s2factura(id, placeholderText) {
 
 function s2vigencias(id, placeholderText) {
     $("#vigencias").data('placeholder', placeholderText);
-    var data=[];
+    let data=[];
     data.push({"id":id});
-    var json = JSON.stringify(data)
+    let json = JSON.stringify(data)
     __ajax("controller/getVigencias.php", {"json":json})
         .done(function (info) {
             $("#vigencias").select2({
@@ -350,27 +457,27 @@ function s2vigencias(id, placeholderText) {
 }
 
 function getTerceroPredio(id) {
-    var data=[];
+    let data=[];
     data.push({"id":id});
-    var json=JSON.stringify(data);
+    let json=JSON.stringify(data);
     __ajax("controller/getTerceroPredio.php", {"json":json})
         .done(function (info) {
-            var result=Object.values(info);
-            var data = {
+            let result=Object.values(info);
+            let data = {
                 id: result[1][0].id,
                 text: result[1][0].text
             };
-            var newOption = new Option(data.text, data.id, true, true);
+            let newOption = new Option(data.text, data.id, true, true);
             $('#contribuyente').append(newOption).trigger('change');
         });
 }
 function getMatricula(id) {
-    var data=[];
+    let data=[];
     data.push({"id":id});
-    var json = JSON.stringify(data);
+    let json = JSON.stringify(data);
     __ajax("controller/listMatricula.php", {"json":json})
         .done(function (info) {
-            var res=Object.values(info);
+            let res=Object.values(info);
             $("#matricula").val(res[1][0].matricula);
             $("#direccion").val(res[1][0].direccion);
     });
@@ -381,5 +488,5 @@ function __ajax(url, data) {
         type:"GET",
         dataType:"json",
         url:url
-    })
+    });
 }

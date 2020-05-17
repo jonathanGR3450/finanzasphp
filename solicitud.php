@@ -71,7 +71,7 @@
             </div>
             <div class="form-group col-md-6">
                 <label for="vigencias">Vigencias</label>
-                <select class="form-control" name="vigencias[]" id="vigencias" data-placeholder="No hay predio seleccionado" multiple="multiple" disabled="true"></select>
+                <select class="form-control" name="vigencias[]" id="vigencias" data-placeholder="No hay predio seleccionado" multiple="multiple" disabled></select>
             </div>
         </div>
         <div class="form-row">
@@ -80,7 +80,7 @@
                 <input type="number" min="30" max="100" value="30" class="form-control" id="primeracuota" name="primeracuota">
             </div>
             <div class="form-group col-md-6">
-                <label for="cuotas">Numero de Cuotas</label>
+                <label for="numerocuotas">Numero de Cuotas</label>
                 <input type="number" min="0" max="1000" value="0" class="form-control" id="numerocuotas" name="numerocuotas">
             </div>
         </div>
@@ -90,11 +90,11 @@
         <div class="form-row">
             <div class="form-group col-md-6">
                 <label for="numeroresolucion">Numero de Resolución</label>
-                <input type="text" name="numeroresolucion" class="form-control" id="numeroresolucion" disabled="true">
+                <input type="text" name="numeroresolucion" class="form-control" id="numeroresolucion" disabled>
             </div>
             <div class="form-group col-md-6">
                 <label for="fecharesolucion">Fecha de Resolución</label>
-                <input type="text" name="fecharesolucion" class="form-control" id="fecharesolucion" disabled="true">
+                <input type="text" name="fecharesolucion" class="form-control" id="fecharesolucion" disabled>
             </div>
         </div>
         <hr>
@@ -165,6 +165,33 @@
             </div>
         </div>
         <button type="submit" class="btn btn-primary" id="solicitud">Solicitud</button>
+    </form>
+    <hr>
+    <form>
+        <h2>Facturacion</h2>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="acuerdopago">Seleccione el acuerdo de pago</label>
+                <select class="form-control" name="acuerdopago" id="acuerdopago" multiple="multiple"></select>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="cuotas">Seleccione la cuota</label>
+                <select class="form-control" id="cuotas" name="cuotas" multiple="multiple"></select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="monto">Ingrese el monto</label>
+                <input class="form-control" type="number" name="monto" id="monto" min="0" max="" value="" placeholder="0">
+            </div>
+            <div class="form-group col-md-6">
+                <label for="fechapago">Seleccione la fecha de pago</label>
+                <input class="form-control" type="date" name="fechapago" id="fechapago">
+            </div>
+        </div>
+        <div class="form-group">
+            <button type="button" class="btn btn-primary" id="facturacion">Facturar</button>
+        </div>
     </form>
 </div>
 

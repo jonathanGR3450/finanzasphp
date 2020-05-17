@@ -1,5 +1,7 @@
 <?php
+date_default_timezone_set('America/Bogota');
     if ($_POST['predios']){
+        //para predial_acuerdo_pago
         $fecha = date('Y-m-d H:i:s');
         $acuerdopago=500000+rand(0, 99);
         $pago = [
@@ -16,6 +18,7 @@
             'ip_wan'=>'182.192.1.1',
             'ip_local'=>'172.168.1.16']
         ];
+        //para predial_acuerdo_pago_campos
         //dejar pendiente para crear esa tabla //para poseedor crear nuevo campo 5000
         isset($_POST['contribuyente']) ? $contribuyente=$_POST['contribuyente'] : $contribuyente="";
         isset($_POST['poseedor']) ? $poseedor=$_POST['poseedor'] : $poseedor="";
@@ -133,9 +136,9 @@
 
     function getvigencia($data){
         $result=[];
-        unset($data[count($data)]);
+        //unset($data[count($data)]);
         foreach ($data as $item){
-            $result[]=$item[0];
+            $item!==end($data) ? $result[]=$item[0] : null;
         }
         return $result;
     }
