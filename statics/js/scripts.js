@@ -1,8 +1,5 @@
 $(document).ready(function(){
     $.fn.select2.defaults.set('language', 'es');
-    $('form').bind('submit', function () {
-        $(this).find(':input').prop('disabled', false);
-    });
     $('#predios').select2({
         placeholder: 'Escriba el numero de predio',
         maximumSelectionLength: 1,
@@ -32,18 +29,17 @@ $(document).ready(function(){
     });
     //cuando hay cambios en la lista de predios se asigna informacion por defecto
     $("#predios").change(function () {
-        let data=$("#predios").select2('data');
-        let selected=Object.values(data);
-        if (selected.length>0){
-            getMatricula(selected[0]['id']);
-            getTerceroPredio(selected[0]['id']);
+        let data=$("#predios").val();
+        if (data.length>0){
+            getMatricula(data[0]);
+            getTerceroPredio(data[0]);
             let selfactura=$("input[name=selectfactura]:checked").val();
             if (selfactura==='factura'){
-                s2factura(selected[0]['id'], 'Seleccione el numero de factura');
+                s2factura(data[0], 'Seleccione el numero de factura');
             }else if (selfactura==='vigencia'){
-                s2vigencias(selected[0]['id'], "Seleccione el numero de vigencia");
+                s2vigencias(data[0], "Seleccione el numero de vigencia");
             }
-        }else if (selected.length===0){
+        }else if (data.length===0){
             $("#matricula").val(null);
             $("#direccion").val(null);
             $("#contribuyente").val(null).trigger("change");
