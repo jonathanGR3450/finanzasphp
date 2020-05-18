@@ -122,9 +122,7 @@ $(document).ready(function(){
                 s2factura(0, '');
                 $("#factura").select2({ data: null }).prop("disabled", true).empty().trigger("change");
                 $("#vigencias").select2({ data: null }).prop("disabled", false).trigger("change");
-                console.log("elimina vigencias?")
                 if (selected.length>0){
-                    console.log("hay pedio seleciono vigencia")
                     s2vigencias(selected[0]['id'], "Seleccione el numero de vigencia");
                 }
             }
@@ -250,7 +248,6 @@ $(document).ready(function(){
                 let json=JSON.stringify(id);
                 __ajax('controller/getDebeTotal.php', {'json':json})
                     .done(function (info) {
-                        console.log(info)
                         debe=info[0]['debetotal'];
                         $("#monto").prop({ "placeholder":debe, "max":debe});
                     });
