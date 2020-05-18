@@ -1,6 +1,8 @@
 <?php
 date_default_timezone_set('America/Bogota');
-    if ($_POST['predios']){
+    $info=json_decode($_GET['json'], true);
+    $info=$info[0];
+    if ($info['predios']){
         //para predial_acuerdo_pago
         $fecha = date('Y-m-d H:i:s');
         $acuerdopago=500000+rand(0, 99);
@@ -20,18 +22,18 @@ date_default_timezone_set('America/Bogota');
         ];
         //para predial_acuerdo_pago_campos
         //dejar pendiente para crear esa tabla //para poseedor crear nuevo campo 5000
-        isset($_POST['contribuyente']) ? $contribuyente=$_POST['contribuyente'] : $contribuyente="";
-        isset($_POST['poseedor']) ? $poseedor=$_POST['poseedor'] : $poseedor="";
-        $municipio=$_POST['municipio'];
+        isset($info['contribuyente']) ? $contribuyente=$info['contribuyente'] : $contribuyente="";
+        isset($info['poseedor']) ? $poseedor=$info['poseedor'] : $poseedor="";
+        $municipio=$info['municipio'];
         $datoscampos=[
-            '9131'=>$_POST['predios'], //pk predios
+            '9131'=>$info['predios'], //pk predios
             '9111'=>$contribuyente, //array de contribuyente o tercero
             '11004'=>$poseedor, //array de poseedor
             '11005'=>$municipio, //municipio
-            '11006'=>$_POST['direccion'], //direccion de notificacion
-            '11007'=>$_POST['matricula'], //matricula del predio
-            '9112'=>getvigencia($_POST['vigencia']), //array de vigencias
-            '9114'=>$_POST['numerocuotas'], //numero de cuotas
+            '11006'=>$info['direccion'], //direccion de notificacion
+            '11007'=>$info['matricula'], //matricula del predio
+            '9112'=>getvigencia($info['vigencia']), //array de vigencias
+            '9114'=>$info['numerocuotas'], //numero de cuotas
             '9115'=>"", //fecha de resolucion
             '9116'=>'', //numero de resolucion
             '9129'=>'i', //estado acuerdo pagado (ellos lo tienen con f)
@@ -65,8 +67,8 @@ date_default_timezone_set('America/Bogota');
         $pkacuerdovigencias=$acuerdopago+10000;
         $pagovigencias=[];
         $count=0;
-        foreach ($_POST['vigencia'] as $vigencia){
-            if (end($_POST['vigencia'])!==$vigencia){
+        foreach ($info['vigencia'] as $vigencia){
+            if (end($info['vigencia'])!==$vigencia){
                 $pagovigencias[]=[
                     "predial_acuerdo_pago_vigencia"=>$pkacuerdovigencias+$count,
                     "predial_acuerdo_pago"=>$acuerdopago,
@@ -89,8 +91,8 @@ date_default_timezone_set('America/Bogota');
         $pkacuerdocuotas=$acuerdopago+100000;
         $pagocuota=[];
         $count=0;
-        foreach ($_POST['cuotas'] as $item) {
-            if ($item!==end($_POST['cuotas'])){
+        foreach ($info['cuotas'] as $item) {
+            if ($item!==end($info['cuotas'])){
                 $pagocuota[]=[
                     "predial_acuerdo_pago_cuota"=>$pkacuerdocuotas+$count,
                     "predial_acuerdo_pago"=>$acuerdopago,
@@ -122,6 +124,8 @@ date_default_timezone_set('America/Bogota');
             'pagovigencias'=>$pagovigencias,
             'pagocuota'=>$pagocuota,
             'pagocampos'=>$pagocampos));
+
+
         $curl=curl_init("http://localhost:8080/api/public/api/v1/insertPrediaAcuerdo");
         curl_setopt($curl, CURLOPT_POSTFIELDS, 1);
         curl_setopt($curl, CURLOPT_POSTFIELDS, $json);
@@ -129,10 +133,9 @@ date_default_timezone_set('America/Bogota');
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
         $result=curl_exec($curl);
         curl_close($curl);
-
     }
-    header("LOCATION:http://localhost:8080/finanzasphp/");
-    exit();
+    /*header("LOCATION:http://localhost:8080/finanzasphp/");
+    exit();*/
 
     function getvigencia($data){
         $result=[];

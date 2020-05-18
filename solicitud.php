@@ -15,7 +15,7 @@
 </head>
 <body>
 <div class="container mt-5">
-    <form method="post" action="controller/guardarSolicitud.php">
+    <form method="post" action="">
         <div class="form-row">
             <div class="form-group col-md-6">
                 <label for="predios">Predio</label>
@@ -164,7 +164,7 @@
                 </table>
             </div>
         </div>
-        <button type="submit" class="btn btn-primary" id="solicitud">Solicitud</button>
+        <button type="button" class="btn btn-primary" id="solicitud">Solicitud</button>
     </form>
     <hr>
     <form>

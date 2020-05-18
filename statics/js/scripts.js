@@ -138,11 +138,12 @@ $(document).ready(function(){
             let json=JSON.stringify(data);
             __ajax("controller/vigenciaFactura.php", {"json":json})
                 .done(function (info) {
+                    let auxvigencia=$("#vigencias");
                     for (let i=0; i<info.length; i++){
                         let newOption=new Option(info[i]['text'], info[i]['id'], true, true);
-                        $("#vigencias").append(newOption).trigger("change");
+                        auxvigencia.append(newOption).trigger("change");
                     }
-                    if ($("#vigencias").val().length>0){
+                    if (auxvigencia.val().length>0){
                         facturaPrint(selectfactura[0]['id']);
                     }
                 });
@@ -279,7 +280,7 @@ $(document).ready(function(){
                     type: 'GET',
                     dataType: 'json',
                     url:'controller/setLiquidacion.php',
-                }).done(function (info) {
+                }).done(function () {
                     cuotas.empty().trigger('change')
                     $("#acuerdopago").empty().trigger('change')
                     montovalor.val('');
@@ -292,6 +293,48 @@ $(document).ready(function(){
             }
 
         }else alert('los campos no deben estar vacios')
+    });
+    $('#solicitud').click(function () {
+        let vigencia=[];
+        $("#datosvigencias").find("tr").each(function () {
+            aux=[];
+            $(this).find("td").find("input").each(function () {
+                aux.push($(this).val());
+            });
+            vigencia.push(aux);
+        });
+        let cuotas=[];
+        $("#datoscuotas").find('tr').each(function () {
+            aux=[];
+            $(this).find('td').find('input').each(function () {
+                aux.push($(this).val());
+            });
+            cuotas.push(aux);
+        });
+        let datos=[];
+        datos.push({
+                'predios':$("#predios").val()[0],
+                'contribuyente':$("#contribuyente").val(),
+                'poseedor':$("#poseedor").val(),
+                'municipio':$("#municipio").val()[0],
+                'direccion':$("#direccion").val(),
+                'matricula':$("#matricula").val(),
+                'vigencias':$("#vigencias").val(),
+                'primeracuota':$("#primeracuota").val(),
+                'numerocuotas':$("#numerocuotas").val(),
+                'vigencia':vigencia,
+                'cuotas':cuotas
+            });
+        let json = JSON.stringify(datos);
+            $.ajax({
+                url: 'controller/guardarSolicitud.php',
+                type: 'get',
+                dataType:'json',
+                data: {'json':json}
+            }).
+            done(function () {
+                location.reload();
+            });
     });
 
 });
@@ -314,11 +357,11 @@ function facturacion(id) {
 }
 function clearTablas() {
     let tablaVigencias=`<tr style="background-color: #aec6ff">
-                        <th scope="row">Totalizado de Vigencias</th>
+                        <td>Totalizado de Vigencias</td>
                         <td>0</td> <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>`;
     $("#datosvigencias").html(tablaVigencias);
     let tablaCuotas=`<tr style="background-color: #aec6ff">
-                        <th scope="row">Total</th><td>0</td>
+                        <td>Total</td><td>0</td>
                         <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
                         <td>0</td><td>0</td></tr>`;
     $("#datoscuotas").html(tablaCuotas);
@@ -332,6 +375,7 @@ function cuotas() {
         $("#totales").find("td").find("input").each(function () {
             aux.push($(this).val());
         });
+        aux.shift();
         totales.push({"totales":aux});
         let json=JSON.stringify({"data":totales});
         __ajax("controller/printCuotas.php",{"json":json})
@@ -359,7 +403,7 @@ function tablaCuotas(totalCuotas, porcentaje, numeroCuotas){
             porcentajeCuota=Number((100-porcentaje)/numeroCuotas).toFixed(2);
         }
         html+=`<tr ${st}>
-            <th scope='row'>${cuota}</th>
+            <td>${cuota}</td>
             <td><input type='text' value='${porcentajeCuota}' name='cuotas[${count}][]' hidden>${porcentajeCuota}</td>`;
         for(let j=0; j<totalCuotas[i].length;j++){
             html+=`<td><input type='text' value='${totalCuotas[i][j]}' name='cuotas[${count}][]' hidden>${totalCuotas[i][j]}</td>`;
@@ -386,8 +430,8 @@ function imprimirTablaVigencias(datos) {
         i===datos.length-1 ? total=`id='totales' style='background-color: #aec6ff'` : total="";
         html+=`<tr ${total}>`;
         for (j=0;j<datos[i].length;j++){
-            j===0 ? t="th" : t="td";
-            html+=`<${t}><input type='text' value='${datos[i][j]}' name='vigencia[${i}][]' hidden>${datos[i][j]}</${t}>`;
+            //j===0 ? t="th" : t="td";
+            html+=`<td><input type='text' value='${datos[i][j]}' name='vigencia[${i}][]' hidden>${datos[i][j]}</td>`;
         }
         html+=`</tr>`;
     }
