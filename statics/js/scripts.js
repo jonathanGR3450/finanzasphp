@@ -260,13 +260,14 @@ $(document).ready(function(){
     $("#facturacion").click(function () {
         let montovalor=$("#monto");
         let cuotas=$("#cuotas");
-        let fechapago=$("#fechapago");
-        if (cuotas.val().length>0 && montovalor.val().length>0 && fechapago.val().length>0){
-            let max = montovalor.attr('max');
-            let monto=montovalor.val();
-            if (monto<=max){
+        if ($("#cuotas").val().length>0 && $("#monto").val().length>0 && $("#fechapago").val().length>0){
+            let max = parseInt($("#monto").attr('max'));
+            let monto=parseInt($("#monto").val());
+            console.log(monto<=max);
+            console.log(monto+'<='+max);
+            if (monto<max){
                 datos=[];
-                datos.push({'cuotas':cuotas.val(), 'monto':montovalor.val(), 'fechapago':fechapago.val()});
+                datos.push({'$("#cuotas")':$("#cuotas").val(), 'monto':$("#monto").val(), 'fechapago':$("#fechapago").val()});
                 json=JSON.stringify(datos);
                 $.ajax({
                     data: {'json':json},
@@ -274,15 +275,15 @@ $(document).ready(function(){
                     dataType: 'json',
                     url:'controller/setLiquidacion.php',
                 }).done(function () {
-                    cuotas.empty().trigger('change')
+                    $("#cuotas").empty().trigger('change')
                     $("#acuerdopago").empty().trigger('change')
-                    montovalor.val('');
-                    fechapago.val("");
+                    $("#monto").val('');
+                    $("#fechapago").val("");
                 });
             }
             else {
                 alert('el monto sobre pasa el valor que debe');
-                montovalor.val('');
+                $("#monto").val('');
             }
 
         }else alert('los campos no deben estar vacios')
@@ -331,21 +332,33 @@ $(document).ready(function(){
     });
 
 });
-//para facturacion
+
+//para guardar la facturacion
 function facturacion(id) {
     data=[];
     data.push({'id':id});
     json=JSON.stringify(data);
     __ajax('controller/getCuotasAcuerdo.php', {'json':json})
     .done(function (info) {
-        info.data[0]['text']="inicial";
-        $("#cuotas").select2({
+        //info.data[0]['text']="inicial";
+        let newOption;
+        for (let i=0; i<info.length; i++){
+            if (info[i]['diff'] > 0){
+                info[i]['text']===0 ? info[i]['text']='inicial' : null;
+                newOption = new Option(info[i]['text'], info[i]['id'], true, true);
+                break;
+            }
+        }
+        /*let newOption = new Option(data.text, data.id, true, true);*/
+        $('#cuotas').append(newOption).trigger('change');
+
+        /*$("#cuotas").select2({
             placeholder: 'Seleccione la cuota que desea abonar',
             allowClear: true,
             maximumSelectionLength: 1,
             data: info.data,
             cache: true,
-        });
+        });*/
     });
 }
 function clearTablas() {

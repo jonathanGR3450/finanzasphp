@@ -1,5 +1,4 @@
 <?php
-
     if (isset($_GET['json'])){
         $datos=json_decode($_GET['json'], true);
         $cuotaInicial=$datos['data'][0]['primeracuota'];
@@ -8,9 +7,13 @@
         $sum=0;
         $totalCuotas=[];
         $cuota="";
+        $acumulado=[];
         for ($i=0;$i<$numeroCuotas;$i++){
             $i==0 ? $cuota=$cuotaInicial : $cuota=(100-$cuotaInicial)/$numeroCuotas;
-            $res=total($totalVigencias, $cuota);
+            $res=total($totalVigencias, $cuota, $acumulado);
+            for ($k=0;$k<count($res);$k++){
+                $acumulado[$k]+=$res[$k];
+            }
             $sum=suma($res);
             $res[]=$sum;
             //campo interes plazo, pero es solo para la ultima cuota, poongo cero y como no suma nada, el total no cambia
@@ -22,11 +25,10 @@
         $totalCuotas[]=ultimaCuota($totalCuotas, $totalVigencias, 500);
         //suma el total
         $totalCuotas[]=totalCuotas($totalCuotas);
-        //echo imprimir($totalCuotas, $cuotaInicial, $numeroCuotas);
         $lol=['total'=>$totalCuotas];
         echo json_encode($lol);
     }
-    function imprimir($totalCuotas, $porcentaje, $numeroCuotas){
+    /*function imprimir($totalCuotas, $porcentaje, $numeroCuotas){
         $html="";
         $count=0;
         foreach ($totalCuotas as $value){
@@ -55,11 +57,12 @@
             $count++;
         }
         return $html;
-    }
-    function total($totales, $cuota){
+    }*/
+    function total($totales, $cuota, $acumulado){
         $result=[];
         for ($i=0; $i<count($totales)-1; $i++){
-            $result[$i]=round($totales[$i]*$cuota/100, -2);
+
+            $acumulado[$i]<$totales[$i] ? $result[$i]=round($totales[$i]*$cuota/100, -2) : $result[$i]=0;
         }
         return $result;
     }

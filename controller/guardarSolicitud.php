@@ -134,8 +134,8 @@ date_default_timezone_set('America/Bogota');
         $result=curl_exec($curl);
         curl_close($curl);
     }
-    /*header("LOCATION:http://localhost:8080/finanzasphp/");
-    exit();*/
+    header("LOCATION:http://localhost:8080/finanzasphp/solicitud.php");
+    exit();
 
     function getvigencia($data){
         $result=[];
