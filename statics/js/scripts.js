@@ -258,17 +258,13 @@ $(document).ready(function(){
         cache: true,
     });
     $("#facturacion").click(function () {
-        let montovalor=$("#monto");
-        let cuotas=$("#cuotas");
         if ($("#cuotas").val().length>0 && $("#monto").val().length>0 && $("#fechapago").val().length>0){
             let max = parseInt($("#monto").attr('max'));
             let monto=parseInt($("#monto").val());
-            console.log(monto<=max);
-            console.log(monto+'<='+max);
             if (monto<max){
                 datos=[];
-                datos.push({'$("#cuotas")':$("#cuotas").val(), 'monto':$("#monto").val(), 'fechapago':$("#fechapago").val()});
-                json=JSON.stringify(datos);
+                datos.push({'cuotas':$("#cuotas").val(), 'monto':$("#monto").val(), 'fechapago':$("#fechapago").val()});
+                let json=JSON.stringify(datos);
                 $.ajax({
                     data: {'json':json},
                     type: 'GET',
@@ -344,6 +340,7 @@ function facturacion(id) {
         let newOption;
         for (let i=0; i<info.length; i++){
             if (info[i]['diff'] > 0){
+                console.log(info[i]['text']+" "+info[i]['id']);
                 info[i]['text']===0 ? info[i]['text']='inicial' : null;
                 newOption = new Option(info[i]['text'], info[i]['id'], true, true);
                 break;
